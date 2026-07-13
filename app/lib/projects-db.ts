@@ -1,28 +1,56 @@
-import { sql } from '@vercel/postgres';
+import { sql } from "@vercel/postgres";
 
 export interface Project {
   id: number;
   title: string;
   description: string;
-  type: 'opensource' | 'school';
-  technologies: string[];
-  link?: string;
+  type: string;
 }
 
-export async function getProjects(type?: string | null): Promise<Project[]> {
-  if (type) {
-    const { rows } = await sql<Project>`
-      SELECT * FROM projects WHERE type = ${type} ORDER BY id
-    `;
-    return rows;
-  }
-  const { rows } = await sql<Project>`SELECT * FROM projects ORDER BY id`;
+const ITEMS_PER_PAGE = 6;
+
+export async function getProjects() {
+  const { rows } = await sql<Project>`
+    SELECT *
+    FROM projects
+    ORDER BY id;
+  `;
+
   return rows;
 }
 
-export async function getProjectById(id: number): Promise<Project | null> {
+export async function fetchFilteredProjects(
+  query: string,
+  currentPage: number
+) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
   const { rows } = await sql<Project>`
-    SELECT * FROM projects WHERE id = ${id}
+    SELECT *
+    FROM projects
+    WHERE
+      title ILIKE ${`%${query}%`}
+      OR description ILIKE ${`%${query}%`}
+      OR type ILIKE ${`%${query}%`}
+    ORDER BY id
+    LIMIT ${ITEMS_PER_PAGE}
+    OFFSET ${offset};
   `;
-  return rows[0] ?? null;
+
+  return rows;
+}
+
+export async function fetchProjectsPages(query: string) {
+  const { rows } = await sql`
+    SELECT COUNT(*) AS count
+    FROM projects
+    WHERE
+      title ILIKE ${`%${query}%`}
+      OR description ILIKE ${`%${query}%`}
+      OR type ILIKE ${`%${query}%`};
+  `;
+
+  const totalPages = Math.ceil(Number(rows[0].count) / ITEMS_PER_PAGE);
+
+  return totalPages;
 }

@@ -1,9 +1,32 @@
-import { getProjects, type Project } from "@/app/lib/projects-db";
+import {
+  fetchFilteredProjects,
+  fetchProjectsPages,
+} from "@/app/lib/projects-db";
+
+import ProjectSearch from "./search";
+import Pagination from "./pagination";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectsPage() {
-  const projects = await getProjects();
+interface Props {
+  searchParams?: {
+    query?: string;
+    page?: string;
+  };
+}
+
+export default async function ProjectsPage({
+  searchParams,
+}: Props) {
+  const query = searchParams?.query || "";
+  const currentPage = Number(searchParams?.page) || 1;
+
+  const projects = await fetchFilteredProjects(
+    query,
+    currentPage
+  );
+
+  const totalPages = await fetchProjectsPages(query);
 
   return (
     <main className="max-w-5xl mx-auto p-8">
@@ -11,24 +34,28 @@ export default async function ProjectsPage() {
         Projects
       </h1>
 
-      <div className="space-y-4">
-        {projects.map((project: Project) => (
+      <ProjectSearch />
+
+      <div className="space-y-6">
+        {projects.map((project) => (
           <div
             key={project.id}
-            className="border rounded-lg p-4"
+            className="border rounded-lg p-6"
           >
-            <h2 className="text-xl font-bold">
+            <h2 className="text-xl font-semibold">
               {project.title}
             </h2>
 
             <p>{project.description}</p>
 
-            <p className="text-gray-500">
+            <span className="text-sm text-gray-500">
               {project.type}
-            </p>
+            </span>
           </div>
         ))}
       </div>
+
+      <Pagination totalPages={totalPages} />
     </main>
   );
 }
