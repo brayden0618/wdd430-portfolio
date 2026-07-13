@@ -1,26 +1,28 @@
-export const projects = [
-  {
-    id: 1,
-    title: "Portfolio Website",
-    type: "school",
-    description: "A portfolio built with Next.js."
-  },
-  {
-    id: 2,
-    title: "Open Source Calculator",
-    type: "opensource",
-    description: "A calculator contributed to GitHub."
-  },
-  {
-    id: 3,
-    title: "Task Manager",
-    type: "school",
-    description: "A project management application."
-  },
-  {
-    id: 4,
-    title: "Weather App",
-    type: "opensource",
-    description: "Displays weather using an API."
+import { sql } from '@vercel/postgres';
+
+export interface Project {
+  id: number;
+  title: string;
+  description: string;
+  type: 'opensource' | 'school';
+  technologies: string[];
+  link?: string;
+}
+
+export async function getProjects(type?: string | null): Promise<Project[]> {
+  if (type) {
+    const { rows } = await sql<Project>`
+      SELECT * FROM projects WHERE type = ${type} ORDER BY id
+    `;
+    return rows;
   }
-];
+  const { rows } = await sql<Project>`SELECT * FROM projects ORDER BY id`;
+  return rows;
+}
+
+export async function getProjectById(id: number): Promise<Project | null> {
+  const { rows } = await sql<Project>`
+    SELECT * FROM projects WHERE id = ${id}
+  `;
+  return rows[0] ?? null;
+}
