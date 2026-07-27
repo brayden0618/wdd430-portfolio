@@ -1,4 +1,10 @@
 import ProjectList from "@/components/ProjectList";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Brayden Wayman Portfolio",
+  description: "Welcome to my portfolio website.",
+};
 
 const projects = [
   {

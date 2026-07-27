@@ -92,3 +92,19 @@ export async function deleteProject(id: number) {
     WHERE id = ${id}
   `;
 }
+
+export interface User {
+  id: number;
+  email: string;
+  passwordHash: string;
+}
+
+export async function getUserByEmail(email: string) {
+  const { rows } = await sql<User>`
+    SELECT *
+    FROM users
+    WHERE email = ${email};
+  `;
+
+  return rows[0];
+}

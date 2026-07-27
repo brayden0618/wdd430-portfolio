@@ -5,6 +5,12 @@ import {
 
 import ProjectSearch from "./search";
 import Pagination from "./pagination";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Projects",
+  description: "Browse through my projects.",
+};
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +55,7 @@ export default async function ProjectsPage({
             <p>{project.description}</p>
 
             <span className="text-sm text-gray-500">
-              {project.type}
+              {project.technologies}
             </span>
           </div>
         ))}
